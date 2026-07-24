@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skylight Farm — Weather for Growers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha512-sA+2siC5JXI4M7a7ueaN7KUFl4o3GqlLKQ6Clc7wVs5a1+6jV2oS5RhYjUubaGJ1lxT3GbfG4T8mXlrErFf+MQ=="
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="auth.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="skyParticles" class="sky-particles" aria-hidden="true"></div>
+
+    <main class="app-shell">
+      <!-- Header / Controls -->
+      <div class="header">
+        <div class="header-top">
+          <div class="logo">🌾 Skylight Farm</div>
+          <div class="header-controls">
+            <button id="unitToggle" class="pill-toggle" type="button">°C</button>
+            <button id="themeToggle" class="pill-toggle" type="button">🌙</button>
+          </div>
+        </div>
+
+        <div class="search-container">
+          <input id="cityInput" type="text" placeholder="Search for a location..." />
+          <button id="searchButton" type="button">Search</button>
+          <button id="currentLocationButton" type="button" title="Use current location">📍</button>
+        </div>
+
+        <div id="authArea" class="auth-area">
+          <a class="signin-link" href="login.html">Sign in</a>
+        </div>
+      </div>
+
+      <!-- Status Message -->
+      <div id="statusMessage" class="status-message"></div>
+
+      <!-- Current Weather -->
+      <section class="weather-current">
+        <div class="weather-header">
+          <div>
+            <h1 id="cityName">—</h1>
+            <div id="dateText" class="date-text">—</div>
+          </div>
+          <div class="weather-icon-large">
+            <span id="weatherIcon">☀️</span>
+          </div>
+        </div>
+
+        <div class="weather-main">
+          <div class="temp-display">
+            <span id="temperature" class="temperature">—</span>
+            <div class="weather-details">
+              <div id="weatherDescription" class="description">—</div>
+              <div class="feels-like">
+                Feels like <span id="feelsLike">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric">
+            <div class="metric-label">Humidity</div>
+            <div id="humidity" class="metric-value">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Wind</div>
+            <div id="wind" class="metric-value">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Pressure</div>
+            <div id="pressure" class="metric-value">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Sunrise</div>
+            <div id="sunrise" class="metric-value">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Sunset</div>
+            <div id="sunset" class="metric-value">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Air Quality</div>
+            <div id="airQuality" class="metric-value">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">UV Outlook</div>
+            <div id="uvOutlook" class="metric-value">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Last Updated</div>
+            <div id="lastUpdated" class="metric-value">—</div>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button id="favoriteButton" type="button" class="action-btn">★ Save</button>
+          <button id="shareButton" type="button" class="action-btn">⎘ Share</button>
+        </div>
+      </section>
+
+      <!-- Saved/Recent Locations -->
+      <section class="favorites-section">
+        <h2>Favorite Locations</h2>
+        <div id="chipRow" class="chip-row"></div>
+      </section>
+
+      <!-- Crop & Ag Info -->
+      <section class="agricultural-section">
+        <div class="crop-selector">
+          <label for="cropSelect">Crop Type</label>
+          <select id="cropSelect" type="text">
+            <option value="">Select crop...</option>
+            <option value="corn">Corn</option>
+            <option value="wheat">Wheat</option>
+            <option value="soybean">Soybean</option>
+            <option value="apple">Apple</option>
+            <option value="grape">Grape</option>
+          </select>
+        </div>
+
+        <!-- Frost Banner -->
+        <div id="frostBanner" class="frost-banner" style="display: none;">
+          ⚠️ Frost risk detected
+        </div>
+
+        <div class="ag-metrics-grid">
+          <div class="metric">
+            <div class="metric-label">Soil Temp</div>
+            <div id="soilTemp" class="metric-value">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Soil Moisture</div>
+            <div id="soilMoisture" class="metric-value">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Rainfall Total</div>
+            <div id="rainfallTotal" class="metric-value">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Growing Degree Days</div>
+            <div id="gddTotal" class="metric-value">—</div>
+            <div id="gddSub" class="metric-sub">—</div>
+          </div>
+        </div>
+
+        <div class="ag-tips">
+          <div class="tip-section">
+            <div class="tip-label">Spray Window</div>
+            <div id="sprayWindow" class="tip-value">—</div>
+          </div>
+          <div class="tip-section">
+            <div class="tip-label">Irrigation Tip</div>
+            <div id="irrigationTip" class="tip-value">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI Insight -->
+      <section class="ai-section">
+        <h2>AI Insight</h2>
+        <div id="aiInsight" class="ai-box">—</div>
+        <div id="aiAction" class="ai-action">—</div>
+      </section>
+
+      <!-- Forecast Cards -->
+      <section class="forecast-section">
+        <h2>6-Day Forecast</h2>
+        <div id="forecastCards" class="forecast-cards"></div>
+      </section>
+
+      <!-- Hourly Forecast -->
+      <section class="hourly-section">
+        <h2>Hourly Forecast</h2>
+        <div id="hourlyStrip" class="hourly-strip"></div>
+      </section>
+
+      <!-- Map -->
+      <section class="map-section">
+        <h2>Location Map</h2>
+        <div id="mapContainer" style="height: 400px; width: 100%; border-radius: 12px; border: 1px solid #374151;"></div>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

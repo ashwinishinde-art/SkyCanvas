@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create account — Skylight Farm</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="auth.css" />
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-header">
+      <div class="auth-logo">🌾 Skylight Farm</div>
+      <h1 class="auth-title">Create account</h1>
+      <p class="auth-subtitle">Join the farming community</p>
+    </div>
+
+    <div id="authMessage" class="auth-alert"></div>
+
+    <form id="registerForm" class="auth-form">
+      <div class="form-group">
+        <label for="reg-username">Username</label>
+        <input 
+          id="reg-username"
+          name="username" 
+          type="text" 
+          placeholder="Choose a username" 
+          required 
+          autocomplete="username"
+          minlength="3"
+          maxlength="30"
+        />
+        <span class="form-error">Username must be 3-30 characters</span>
+      </div>
+
+      <div class="form-group">
+        <label for="reg-email">Email</label>
+        <input 
+          id="reg-email"
+          name="email" 
+          type="email" 
+          placeholder="your@email.com" 
+          required 
+          autocomplete="email"
+        />
+        <span class="form-error">Please enter a valid email address</span>
+      </div>
+
+      <div class="form-group">
+        <label for="reg-password">Password</label>
+        <input 
+          id="reg-password"
+          name="password" 
+          type="password" 
+          placeholder="Create a strong password" 
+          required 
+          autocomplete="new-password"
+          minlength="8"
+        />
+        <span class="form-error">Password must be at least 8 characters</span>
+        <div class="password-strength">
+          <div class="strength-meter">
+            <div class="strength-bar"></div>
+          </div>
+          <div class="strength-text">Weak</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reg-confirm">Confirm Password</label>
+        <input 
+          id="reg-confirm"
+          name="confirm_password" 
+          type="password" 
+          placeholder="Confirm your password" 
+          required 
+          autocomplete="new-password"
+        />
+        <span class="form-error">Passwords do not match</span>
+      </div>
+
+      <button type="submit" class="auth-button">Create account</button>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="login.html">Sign in</a>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script>
+    // Apply saved theme
+    const savedTheme = localStorage.getItem("skylight-theme") || "dark";
+    document.body.dataset.theme = savedTheme;
+
+    // Password strength indicator
+    const passwordInput = document.getElementById("reg-password");
+    const strengthBar = document.querySelector(".strength-bar");
+    const strengthText = document.querySelector(".strength-text");
+    const passwordStrength = document.querySelector(".password-strength");
+
+    function checkPasswordStrength(password) {
+      let strength = 0;
+      
+      if (password.length >= 8) strength++;
+      if (password.length >= 12) strength++;
+      if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+      if (/\d/.test(password)) strength++;
+      if (/[^a-zA-Z\d]/.test(password)) strength++;
+      
+      return Math.min(strength, 3); // 1 = weak, 2 = fair, 3 = good
+    }
+
+    passwordInput.addEventListener("input", (e) => {
+      const strength = checkPasswordStrength(e.target.value);
+      if (e.target.value.length > 0) {
+        passwordStrength.classList.add("show");
+      } else {
+        passwordStrength.classList.remove("show");
+      }
+
+      const strengthLevels = ["weak", "weak", "fair", "good"];
+      const strengthLabels = ["Weak", "Weak", "Fair", "Good"];
+      
+      strengthBar.className = `strength-bar ${strengthLevels[strength]}`;
+      strengthText.className = `strength-text ${strengthLevels[strength]}`;
+      strengthText.textContent = strengthLabels[strength];
+    });
+
+    // Initialize register form
+    initAuthForm({
+      formId: "registerForm",
+      endpoint: "backend/registration.php",
+      buildPayload: (data) => ({
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        password_confirm: data.confirm_password,  // Backend expects 'password_confirm'
+      }),
+      validate: (data) => {
+        if (!data.username || !data.email || !data.password || !data.confirm_password) {
+          return "All fields are required.";
+        }
+        if (data.username.length < 3 || data.username.length > 30) {
+          return "Username must be 3-30 characters.";
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+          return "Please enter a valid email address.";
+        }
+        if (data.password.length < 8) {
+          return "Password must be at least 8 characters.";
+        }
+        if (data.password !== data.confirm_password) {
+          return "Passwords do not match.";
+        }
+        return null;
+      },
+      onSuccess: (result) => {
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 1500);
+      },
+    });
+  </script>
+</body>
+</html>
